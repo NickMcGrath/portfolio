@@ -55,11 +55,12 @@ class MainSelectionTable extends React.Component {
             {this.state.subSelected.description}
           </div>
           <TwoPointInputSlider
-            x1={1}
-            x2={9}
-            min={-10}
-            max={100}
+            x1={this.state.subSelected.min}
+            x2={this.state.subSelected.max}
+            min={this.state.subSelected.min}
+            max={this.state.subSelected.max}
             onBlur={this.getSliderData.bind(this)}/>
+          {/*{this.state.subSelected.rangeSlider}*/}
         </Grid>
       </Grid>
 
@@ -67,7 +68,7 @@ class MainSelectionTable extends React.Component {
   }
 
   getSliderData(data) {
-    console.log("bitch")
+    console.log("slider update")
     console.log(data)
   }
 
@@ -85,11 +86,12 @@ class MainSelectionTable extends React.Component {
   }
 
   onSubSelection(index) {
-    if (index !== this.state.subSelectedIndex)
+    if (index !== this.state.subSelectedIndex) {
       this.setState({
         subSelectedIndex: index,
-        subSelected: this.state.mainSelected.subEntries[index]
+        subSelected: this.state.mainSelected.subEntries[index],
       })
+    }
   }
 }
 
@@ -100,17 +102,33 @@ class PortfolioSettings
       {
         display: "display title",
         subEntries: [{
-          display: "sub display", apiKey: "sub api key", description: "Hello I do this"
+          display: "sub display",
+          apiKey: "sub api key",
+          description: "Hello I do this",
+          min:10,
+          max: 100
         }, {
-          display: "sub display two", apiKey: "sub api key", description: "Hello I do that 2"
+          display: "sub display two",
+          apiKey: "sub api key",
+          description: "Hello I do that 2",
+          min:-10,
+          max: 100
         }]
       },
       {
         display: "display title two",
         subEntries: [{
-          display: "sub display three", apiKey: "sub api key two", description: "Hello I do something 3"
+          display: "sub display three",
+          apiKey: "sub api key two",
+          description: "Hello I do something 3",
+          min:5,
+          max: 10
         }, {
-          display: "sub display four", apiKey: "sub api key", description: "Hello I do not sure 4"
+          display: "sub display four",
+          apiKey: "sub api key",
+          description: "Hello I do not sure 4",
+          min:1,
+          max: 3
         }]
       },
     ]

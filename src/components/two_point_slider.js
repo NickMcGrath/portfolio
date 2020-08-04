@@ -20,11 +20,22 @@ class TwoPointInputSlider extends React.Component {
     super(props);
     this.state = {
       x1: props.x1,
-      x2: props.x2
+      x2: props.x2,
+      min: props.min,
+      max: props.max,
+      onBlur: props.onBlur
     }
   }
 
-
+  componentWillReceiveProps(props) {
+    this.setState({
+      x1: props.x1,
+      x2: props.x2,
+      min: props.min,
+      max: props.max,
+      onBlur: props.onBlur
+    })
+  }
   handleSliderChange = (event, newValue) => {
     this.setState({
       x1: newValue[0],
@@ -46,16 +57,16 @@ class TwoPointInputSlider extends React.Component {
   };
 
   handleBlur = () => {
-    if (this.state.x1 < this.props.min) {
-      this.setState({x1: this.props.min}, () => {
-        this.props.onBlur(this.state)
+    if (this.state.x1 < this.state.min) {
+      this.setState({x1: this.state.min}, () => {
+        this.state.onBlur(this.state)
       })
-    } else if (this.state.x2 > this.props.max) {
-      this.setState({x2: this.props.max}, () => {
-        this.props.onBlur(this.state)
+    } else if (this.state.x2 > this.state.max) {
+      this.setState({x2: this.state.max}, () => {
+        this.state.onBlur(this.state)
       })
     } else {
-      this.props.onBlur(this.state)
+      this.state.onBlur(this.state)
     }
   };
 
@@ -75,9 +86,9 @@ class TwoPointInputSlider extends React.Component {
               onChange={this.handleInputChangeX1}
               onBlur={this.handleBlur}
               inputProps={{
-                step: (this.props.max - this.props.min) * .1,
-                min: this.props.min,
-                max: this.props.max,
+                step: (this.state.max - this.state.min) * .1,
+                min: this.state.min,
+                max: this.state.max,
                 type: 'number',
                 'aria-labelledby': 'input-slider',
               }}
@@ -89,8 +100,8 @@ class TwoPointInputSlider extends React.Component {
               onChange={this.handleSliderChange}
               valueLabelDisplay="auto"
               aria-labelledby="range-slider"
-              min={this.props.min}
-              max={this.props.max}
+              min={this.state.min}
+              max={this.state.max}
               onBlur={this.handleBlur}
             />
           </Grid>
@@ -102,9 +113,9 @@ class TwoPointInputSlider extends React.Component {
               onChange={this.handleInputChangeX2}
               onBlur={this.handleBlur}
               inputProps={{
-                step: (this.props.max - this.props.min) * .1,
-                min: this.props.min,
-                max: this.props.max,
+                step: (this.state.max - this.state.min) * .1,
+                min: this.state.min,
+                max: this.state.max,
                 type: 'number',
                 'aria-labelledby': 'input-slider',
               }}
