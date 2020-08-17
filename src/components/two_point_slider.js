@@ -27,15 +27,16 @@ class TwoPointInputSlider extends React.Component {
     }
   }
 
-  componentWillReceiveProps(props) {
+  componentWillReceiveProps(nextProps) {
     this.setState({
-      x1: props.x1,
-      x2: props.x2,
-      min: props.min,
-      max: props.max,
-      onBlur: props.onBlur
+      x1: nextProps.x1,
+      x2: nextProps.x2,
+      min: nextProps.min,
+      max: nextProps.max,
+      onBlur: nextProps.onBlur
     })
   }
+
   handleSliderChange = (event, newValue) => {
     this.setState({
       x1: newValue[0],
@@ -68,6 +69,7 @@ class TwoPointInputSlider extends React.Component {
     } else {
       this.state.onBlur(this.state)
     }
+
   };
 
   render() {

@@ -10,6 +10,7 @@ import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid';
 import Input from '@material-ui/core/Input';
 import TwoPointInputSlider from "./components/two_point_slider";
+import SinglePointSlider from "./components/single_point_slider";
 
 
 class MainSelectionTable extends React.Component {
@@ -19,7 +20,7 @@ class MainSelectionTable extends React.Component {
     this.state = {
       elements: props.elements,
       mainSelectedIndex: 0,
-      subSelectionIndex: 0,
+      subSelectedIndex: 0,
       mainSelected: props.elements[0],
       subSelected: props.elements[0].subEntries[0]
     }
@@ -55,11 +56,14 @@ class MainSelectionTable extends React.Component {
             {this.state.subSelected.description}
           </div>
           <TwoPointInputSlider
-            x1={this.state.subSelected.min}
-            x2={this.state.subSelected.max}
+            x1={this.state.subSelected.x1}
+            x2={this.state.subSelected.x2}
             min={this.state.subSelected.min}
             max={this.state.subSelected.max}
-            onBlur={this.getSliderData.bind(this)}/>
+            onBlur={this.getRangeSliderData.bind(this)}/>
+          <SinglePointSlider
+            value={this.state.subSelected.multiplier}
+            onBlur={this.getMultiplierSliderData.bind(this)}/>
           {/*{this.state.subSelected.rangeSlider}*/}
         </Grid>
       </Grid>
@@ -67,10 +71,25 @@ class MainSelectionTable extends React.Component {
     )
   }
 
-  getSliderData(data) {
+  getMultiplierSliderData(data){
+    console.log(data)
+    console.log('hi')
+    let updatedState = Object.assign({}, this.state)
+    updatedState.subSelected.multiplier = data.value
+    this.setState(updatedState)
+  }
+
+  getRangeSliderData(data) {
     console.log("slider update")
     console.log(data)
+    let updatedState = Object.assign({}, this.state)
+    updatedState.subSelected.x1 = data.x1
+    updatedState.subSelected.x2 = data.x2
+    this.setState(updatedState)
+
+
   }
+
 
   onMainSelection(index) {
     if (index !== this.state.mainSelectedIndex) {
@@ -105,14 +124,20 @@ class PortfolioSettings
           display: "sub display",
           apiKey: "sub api key",
           description: "Hello I do this",
-          min:10,
-          max: 100
+          min: 10,
+          max: 100,
+          x1: 10,
+          x2: 90,
+          multiplier: -1
         }, {
           display: "sub display two",
-          apiKey: "sub api key",
+          apiKey: "sub api key two",
           description: "Hello I do that 2",
-          min:-10,
-          max: 100
+          min: -10,
+          max: 100,
+          x1: 10,
+          x2: 90,
+          multiplier: -1
         }]
       },
       {
@@ -121,14 +146,20 @@ class PortfolioSettings
           display: "sub display three",
           apiKey: "sub api key two",
           description: "Hello I do something 3",
-          min:5,
-          max: 10
+          min: 5,
+          max: 10,
+          x1: 5,
+          x2: 10,
+          multiplier: -1
         }, {
           display: "sub display four",
           apiKey: "sub api key",
           description: "Hello I do not sure 4",
-          min:1,
-          max: 3
+          min: 1,
+          max: 3,
+          x1: 1,
+          x2: 3,
+          multiplier: -1
         }]
       },
     ]
