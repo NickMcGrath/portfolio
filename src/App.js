@@ -1,22 +1,16 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {ThemeProvider} from '@material-ui/core/styles'
 import CssBaseline from '@material-ui/core/CssBaseline'
-// import theme from './theme'
-import Slider from '@material-ui/core/Slider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid';
-import Input from '@material-ui/core/Input';
 import TwoPointInputSlider from "./components/two_point_slider";
 import SinglePointSlider from "./components/single_point_slider";
+import Typography from "@material-ui/core/Typography";
 
 
 class MainSelectionTable extends React.Component {
   constructor(props) {
     super(props)
-    this.userChanges = {}
     this.state = {
       elements: props.elements,
       mainSelectedIndex: 0,
@@ -30,7 +24,7 @@ class MainSelectionTable extends React.Component {
     return (
       <Grid container width={1}>
         <Grid item xs={4}>
-          <h5>Main Options</h5>
+          <Typography variant="h6">Main Options</Typography>
           <List>
             {this.state.elements.map((item, index) => {
               return (
@@ -41,7 +35,7 @@ class MainSelectionTable extends React.Component {
           </List>
         </Grid>
         <Grid item xs={4}>
-          <h5>Sub Options</h5>
+          <Typography variant="h6">Sub Options</Typography>
           <List>
             {this.state.mainSelected.subEntries.map((item, index) => {
               return (
@@ -50,11 +44,9 @@ class MainSelectionTable extends React.Component {
             })}
           </List>
         </Grid>
-        <Grid item xs={4}>
-
-          <div className="description">
-            {this.state.subSelected.description}
-          </div>
+        <Grid item xs={4} key={this.state.subSelected.apiKey}>
+          <Typography variant="h6">Description</Typography>
+          <Typography variant="body2">{this.state.subSelected.description}</Typography>
           <TwoPointInputSlider
             x1={this.state.subSelected.x1}
             x2={this.state.subSelected.x2}
@@ -63,31 +55,25 @@ class MainSelectionTable extends React.Component {
             onBlur={this.getRangeSliderData.bind(this)}/>
           <SinglePointSlider
             value={this.state.subSelected.multiplier}
-            onBlur={this.getMultiplierSliderData.bind(this)}/>
-          {/*{this.state.subSelected.rangeSlider}*/}
+            onBlur={this.getMultiplierSliderData.bind(this)}
+          />
         </Grid>
       </Grid>
 
     )
   }
 
-  getMultiplierSliderData(data){
-    console.log(data)
-    console.log('hi')
+  getMultiplierSliderData(data) {
     let updatedState = Object.assign({}, this.state)
     updatedState.subSelected.multiplier = data.value
     this.setState(updatedState)
   }
 
   getRangeSliderData(data) {
-    console.log("slider update")
-    console.log(data)
     let updatedState = Object.assign({}, this.state)
     updatedState.subSelected.x1 = data.x1
     updatedState.subSelected.x2 = data.x2
     this.setState(updatedState)
-
-
   }
 
 
@@ -153,7 +139,7 @@ class PortfolioSettings
           multiplier: -1
         }, {
           display: "sub display four",
-          apiKey: "sub api key",
+          apiKey: "sub api key four",
           description: "Hello I do not sure 4",
           min: 1,
           max: 3,

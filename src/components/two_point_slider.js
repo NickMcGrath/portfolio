@@ -1,5 +1,4 @@
 import React from 'react';
-import {makeStyles} from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Slider from '@material-ui/core/Slider';
@@ -7,12 +6,12 @@ import Input from '@material-ui/core/Input';
 import {withStyles} from '@material-ui/styles';
 
 const styles = theme => ({
-  root: {
-    width: 250,
-  },
-  input: {
-    width: 42,
-  },
+  // root: {
+  //   width: 250,
+  // },
+  // input: {
+  //   width: 42,
+  // },
 });
 
 class TwoPointInputSlider extends React.Component {
@@ -25,16 +24,6 @@ class TwoPointInputSlider extends React.Component {
       max: props.max,
       onBlur: props.onBlur
     }
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      x1: nextProps.x1,
-      x2: nextProps.x2,
-      min: nextProps.min,
-      max: nextProps.max,
-      onBlur: nextProps.onBlur
-    })
   }
 
   handleSliderChange = (event, newValue) => {
@@ -76,8 +65,8 @@ class TwoPointInputSlider extends React.Component {
     const {classes} = this.props;
     return (
       <div className={classes.root}>
-        <Typography id="input-slider" gutterBottom>
-          Volume
+        <Typography variant="h6">
+          Range
         </Typography>
         <Grid container spacing={2} alignItems="center">
           <Grid item>

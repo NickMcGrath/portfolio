@@ -1,19 +1,17 @@
 import React from 'react';
-import {makeStyles} from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Slider from '@material-ui/core/Slider';
 import Input from '@material-ui/core/Input';
-import VolumeUp from '@material-ui/icons/VolumeUp';
 import {withStyles} from "@material-ui/styles";
 
 const styles = theme => ({
-  root: {
-    width: 250,
-  },
-  input: {
-    width: 42,
-  },
+  // root: {
+  //   width: 250,
+  // },
+  // input: {
+  //   width: 42,
+  // },
 });
 
 class SinglePointSlider extends React.Component {
@@ -25,15 +23,8 @@ class SinglePointSlider extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps, nextContext) {
-    this.setState({
-      value: nextProps.value,
-      onBlur: nextProps.onBlur
-    })
-  }
 
   handleSliderChange(event, newValue) {
-    console.log(this.state)
     this.setState({value: newValue})
   };
 
@@ -60,8 +51,8 @@ class SinglePointSlider extends React.Component {
     const {classes} = this.props
     return (
       <div className={classes.root}>
-        <Typography id="input-slider" gutterBottom>
-          Volume
+        <Typography variant="h6">
+          Multiplier
         </Typography>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs>
@@ -69,6 +60,9 @@ class SinglePointSlider extends React.Component {
               value={this.state.value}
               onChange={this.handleSliderChange.bind(this)}
               aria-labelledby="input-slider"
+              valueLabelDisplay="auto"
+              min={-1}
+              max={100}
               onBlur={this.handleBlur.bind(this)}
             />
           </Grid>
