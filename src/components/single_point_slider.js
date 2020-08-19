@@ -6,12 +6,12 @@ import Input from '@material-ui/core/Input';
 import {withStyles} from "@material-ui/styles";
 
 const styles = theme => ({
-  // root: {
-  //   width: 250,
-  // },
-  // input: {
-  //   width: 42,
-  // },
+  root: {
+    // width: 250,
+  },
+  input: {
+    width: '3em'
+  }
 });
 
 class SinglePointSlider extends React.Component {
@@ -29,24 +29,22 @@ class SinglePointSlider extends React.Component {
   };
 
   handleInputChange(event) {
-    let newValue = (event.target.value === '' ? '' : Number(event.target.value));
-    this.setState({value: newValue})
+    this.setState({value: event.target.value === '' ? '' : Number(event.target.value)})
   };
 
   handleBlur() {
-    if (this.state.value < -1) {
-      this.setState({value: -1}, () => {
-        this.state.onBlur(this.state)
-      })
-    } else if (this.state.value > 100) {
-      this.setState({value: 100}, () => {
-        this.state.onBlur(this.state)
-      })
-    } else {
-      this.state.onBlur(this.state)
-    }
+    this.setState(state => {
+      let value = state.value
+      if (state.value < -1)
+        value = -1
+      else if (state.value > 100)
+        value = 100
+      return {value: value}
+    }, this.state.onBlur(this.state))
   }
-
+  getValue(){
+    return this.state.value
+  }
   render() {
     const {classes} = this.props
     return (

@@ -9,9 +9,9 @@ const styles = theme => ({
   // root: {
   //   width: 250,
   // },
-  // input: {
-  //   width: 42,
-  // },
+  input: {
+    width: '3em',
+  },
 });
 
 class TwoPointInputSlider extends React.Component {
@@ -45,20 +45,22 @@ class TwoPointInputSlider extends React.Component {
     })
 
   };
+  getValues(){
+    return [this.state.x1, this.state.x2]
+  }
+
 
   handleBlur = () => {
-    if (this.state.x1 < this.state.min) {
-      this.setState({x1: this.state.min}, () => {
-        this.state.onBlur(this.state)
-      })
-    } else if (this.state.x2 > this.state.max) {
-      this.setState({x2: this.state.max}, () => {
-        this.state.onBlur(this.state)
-      })
-    } else {
-      this.state.onBlur(this.state)
-    }
-
+    this.setState((state) => {
+      let x1 = state.x1, x2 = state.x2
+      if (x1 > x2)
+        [x1, x2] = [x2, x1]
+      if (x1 < state.min)
+        x1 = state.min
+      else if (x2 > state.max)
+        x2 = state.max
+      return {x1: x1, x2: x2}
+    }, this.state.onBlur(this.state))
   };
 
   render() {

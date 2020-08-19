@@ -92,7 +92,8 @@ class PortfolioScreenerForm extends React.Component {
     // let updatedState = Object.assign({}, this.state)
     // updatedState.subSelected.multiplier = data.value
     // this.setState(updatedState)
-    this.setState(state => (state.subSelected.multiplier = data.value, state))
+    this.setState(state => {
+      state.subSelected.multiplier = data.value})
   }
 
   getRangeSliderData(data) {
@@ -101,7 +102,9 @@ class PortfolioScreenerForm extends React.Component {
     // updatedState.subSelected.x1 = data.x1
     // updatedState.subSelected.x2 = data.x2
     // this.setState(updatedState)
-    this.setState(state => (state.subSelected.x1 = data.x1, state.subSelected.x2 = data.x2, state))
+    this.setState(state => {
+      state.subSelected.x1 = data.x1
+      state.subSelected.x2 = data.x2})
   }
 
 
