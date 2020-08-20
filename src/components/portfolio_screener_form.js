@@ -2,13 +2,13 @@ import React from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Grid from '@material-ui/core/Grid';
-import TwoPointInputSlider from "./two_point_slider";
-import SinglePointSlider from "./single_point_slider";
 import Typography from "@material-ui/core/Typography";
 import Icon from "@material-ui/core/Icon";
 import Button from "@material-ui/core/Button";
 import {withStyles} from "@material-ui/styles";
 import Container from "@material-ui/core/Container";
+import TwoPointInputSlider from "./two_point_slider";
+import SinglePointSlider from "./single_point_slider";
 
 const styles = theme => ({
   center: {
@@ -23,12 +23,12 @@ class PortfolioScreenerForm extends React.Component {
     super(props)
     //I dont like this because of its un-intuitiveness but Object.assign only creates a shallow copy
     this.defaultElements = JSON.parse(JSON.stringify(props.elements));
+    this.elements = props.elements
     this.state = {
-      elements: props.elements,
       mainSelectedIndex: 0,
       subSelectedIndex: 0,
-      mainSelected: props.elements[0],
-      subSelected: props.elements[0].subEntries[0]
+      mainSelected: this.elements[0],
+      subSelected: this.elements[0].subEntries[0]
     }
   }
 
@@ -40,7 +40,7 @@ class PortfolioScreenerForm extends React.Component {
           <Grid item xs={4}>
             <Typography variant="h6">Main Options</Typography>
             <List>
-              {this.state.elements.map((item, index) => {
+              {this.elements.map((item, index) => {
                 return (
                   <ListItem selected={this.state.mainSelectedIndex === index}
                             key={item.display}
@@ -61,15 +61,23 @@ class PortfolioScreenerForm extends React.Component {
           <Grid item xs={4} key={this.state.subSelected.apiKey}>
             <Typography variant="h6">Description</Typography>
             <Typography variant="body2">{this.state.subSelected.description}</Typography>
+            <Typography variant="h6">
+              Range
+            </Typography>
             <TwoPointInputSlider
               x1={this.state.subSelected.x1}
               x2={this.state.subSelected.x2}
               min={this.state.subSelected.min}
               max={this.state.subSelected.max}
-              onBlur={this.getRangeSliderData.bind(this)}/>
+              onChange={this.handleRangeSliderData.bind(this)}
+              onBlur={this.handleRangeSliderBlur.bind(this)}/>
+            <Typography variant="h6">
+              Multiplier
+            </Typography>
             <SinglePointSlider
               value={this.state.subSelected.multiplier}
-              onBlur={this.getMultiplierSliderData.bind(this)}
+              onChange={this.handleMultiplierChange.bind(this)}
+              onBlur={this.handleMultiplierBlur.bind(this)}
             />
           </Grid>
         </Grid>
@@ -87,34 +95,53 @@ class PortfolioScreenerForm extends React.Component {
     )
   }
 
-  getMultiplierSliderData(data) {
-    //this does a shallow assign and should be refactored
-    // let updatedState = Object.assign({}, this.state)
-    // updatedState.subSelected.multiplier = data.value
-    // this.setState(updatedState)
-    this.setState(state => {
-      state.subSelected.multiplier = data.value})
+  handleMultiplierChange(value) {
+    let updatedSubSelected = Object.assign({}, this.state.subSelected)
+    updatedSubSelected.multiplier = value
+    this.setState({subSelected: updatedSubSelected})
+    this.updateSubSelected(updatedSubSelected)
   }
 
-  getRangeSliderData(data) {
-    //this does a shallow assign and should be refactored
-    // let updatedState = Object.assign({}, this.state)
-    // updatedState.subSelected.x1 = data.x1
-    // updatedState.subSelected.x2 = data.x2
-    // this.setState(updatedState)
-    this.setState(state => {
-      state.subSelected.x1 = data.x1
-      state.subSelected.x2 = data.x2})
+  handleRangeSliderData(data) {
+    let updatedSubSelected = Object.assign({}, this.state.subSelected)
+    updatedSubSelected.x1 = data[0]
+    updatedSubSelected.x2 = data[1]
+    this.setState({subSelected: updatedSubSelected})
+    this.updateSubSelected(updatedSubSelected)
   }
 
+  handleMultiplierBlur() {
+    let value = this.state.subSelected.multiplier
+    if (value < -1)
+      value = -1
+    else if (value > 100)
+      value = 100
+    this.handleMultiplierChange(value)
+  }
+
+  handleRangeSliderBlur() {
+    let x1 = this.state.subSelected.x1, x2 = this.state.subSelected.x2
+    if (x1 > x2)
+      [x1, x2] = [x2, x1]
+    if (x1 < this.state.subSelected.min)
+      x1 = this.state.subSelected.min
+    else if (x2 > this.state.subSelected.max)
+      x2 = this.state.subSelected.max
+
+    this.handleRangeSliderData([x1, x2])
+  }
+
+  updateSubSelected(updatedSubSelected) {
+    this.elements[this.state.mainSelectedIndex].subEntries[this.state.subSelectedIndex] = updatedSubSelected
+  }
 
   onMainSelection(index) {
     if (index !== this.state.mainSelectedIndex) {
       this.setState({
         mainSelectedIndex: index,
-        mainSelected: this.state.elements[index],
+        mainSelected: this.elements[index],
         subSelectedIndex: 0,
-        subSelected: this.state.elements[index].subEntries[0]
+        subSelected: this.elements[index].subEntries[0]
       })
     }
   }
@@ -130,10 +157,10 @@ class PortfolioScreenerForm extends React.Component {
 
   onSubmit() {
     let elements = []
-    for (let i = 0; i < this.state.elements.length; i++) {
-      for (let j = 0; j < this.state.elements[i].subEntries.length; j++) {
-        if (JSON.stringify(this.state.elements[i].subEntries[j]) !== JSON.stringify(this.defaultElements[i].subEntries[j])) {
-          elements.push(this.state.elements[i].subEntries[j])
+    for (let i = 0; i < this.elements.length; i++) {
+      for (let j = 0; j < this.elements[i].subEntries.length; j++) {
+        if (JSON.stringify(this.elements[i].subEntries[j]) !== JSON.stringify(this.defaultElements[i].subEntries[j])) {
+          elements.push(this.elements[i].subEntries[j])
         }
       }
     }

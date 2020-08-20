@@ -1,5 +1,5 @@
 import React from 'react';
-import PortfolioScreenerForm from './components/portfolio_screener_form'
+import PortfolioScreenerForm2 from "./components/portfolio_screener_form";
 
 let tableData = [
   {
@@ -51,7 +51,7 @@ let tableData = [
 export default function App() {
   return (
     <div>
-      <PortfolioScreenerForm elements={tableData}/>
+      <PortfolioScreenerForm2 elements={tableData}/>
     </div>
   )
 }

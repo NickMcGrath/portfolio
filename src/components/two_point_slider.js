@@ -1,6 +1,5 @@
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
 import Slider from '@material-ui/core/Slider';
 import Input from '@material-ui/core/Input';
 import {withStyles} from '@material-ui/styles';
@@ -17,71 +16,40 @@ const styles = theme => ({
 class TwoPointInputSlider extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      x1: props.x1,
-      x2: props.x2,
-      min: props.min,
-      max: props.max,
-      onBlur: props.onBlur
-    }
+    this.handleInputChangeX1 = this.handleInputChangeX1.bind(this)
+    this.handleInputChangeX2 = this.handleInputChangeX2.bind(this)
+    this.handleSliderChange = this.handleSliderChange.bind(this)
   }
 
   handleSliderChange = (event, newValue) => {
-    this.setState({
-      x1: newValue[0],
-      x2: newValue[1]
-    })
+    this.props.onChange([newValue[0], newValue[1]])
   };
 
   handleInputChangeX1 = (event) => {
-    this.setState({
-      x1: event.target.value === '' ? '' : Number(event.target.value)
-    })
-
+    this.props.onChange([event.target.value === '' ? '' : Number(event.target.value), this.props.x2])
   };
   handleInputChangeX2 = (event) => {
-    this.setState({
-      x2: event.target.value === '' ? '' : Number(event.target.value)
-    })
-
+    this.props.onChange([this.props.x1, event.target.value === '' ? '' : Number(event.target.value)])
   };
-  getValues(){
-    return [this.state.x1, this.state.x2]
-  }
 
-
-  handleBlur = () => {
-    this.setState((state) => {
-      let x1 = state.x1, x2 = state.x2
-      if (x1 > x2)
-        [x1, x2] = [x2, x1]
-      if (x1 < state.min)
-        x1 = state.min
-      else if (x2 > state.max)
-        x2 = state.max
-      return {x1: x1, x2: x2}
-    }, this.state.onBlur(this.state))
-  };
 
   render() {
     const {classes} = this.props;
+    const x1 = this.props.x1, x2 = this.props.x2, min = this.props.min, max = this.props.max
     return (
       <div className={classes.root}>
-        <Typography variant="h6">
-          Range
-        </Typography>
         <Grid container spacing={2} alignItems="center">
           <Grid item>
             <Input
               className={classes.input}
-              value={this.state.x1}
+              value={x1}
               margin="dense"
               onChange={this.handleInputChangeX1}
-              onBlur={this.handleBlur}
+              onBlur={this.props.onBlur}
               inputProps={{
-                step: (this.state.max - this.state.min) * .1,
-                min: this.state.min,
-                max: this.state.max,
+                step: (max - min) * .1,
+                min: min,
+                max: max,
                 type: 'number',
                 'aria-labelledby': 'input-slider',
               }}
@@ -89,26 +57,26 @@ class TwoPointInputSlider extends React.Component {
           </Grid>
           <Grid item xs>
             <Slider
-              value={[this.state.x1, this.state.x2]}
+              value={[x1, x2]}
               onChange={this.handleSliderChange}
               valueLabelDisplay="auto"
               aria-labelledby="range-slider"
-              min={this.state.min}
-              max={this.state.max}
-              onBlur={this.handleBlur}
+              min={min}
+              max={max}
+              onBlur={this.props.onBlur}
             />
           </Grid>
           <Grid item>
             <Input
               className={classes.input}
-              value={this.state.x2}
+              value={x2}
               margin="dense"
               onChange={this.handleInputChangeX2}
-              onBlur={this.handleBlur}
+              onBlur={this.props.onBlur}
               inputProps={{
-                step: (this.state.max - this.state.min) * .1,
-                min: this.state.min,
-                max: this.state.max,
+                step: (max - min) * .1,
+                min: min,
+                max: max,
                 type: 'number',
                 'aria-labelledby': 'input-slider',
               }}

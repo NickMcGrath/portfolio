@@ -1,6 +1,5 @@
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
 import Slider from '@material-ui/core/Slider';
 import Input from '@material-ui/core/Input';
 import {withStyles} from "@material-ui/styles";
@@ -17,60 +16,42 @@ const styles = theme => ({
 class SinglePointSlider extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      value: props.value,
-      onBlur: props.onBlur
-    }
+    this.handleSliderChange = this.handleSliderChange.bind(this)
+    this.handleInputChange = this.handleInputChange.bind(this)
   }
-
 
   handleSliderChange(event, newValue) {
-    this.setState({value: newValue})
-  };
+    this.props.onChange(newValue)
+  }
 
   handleInputChange(event) {
-    this.setState({value: event.target.value === '' ? '' : Number(event.target.value)})
-  };
+    this.props.onChange(event.target.value === '' ? '' : Number(event.target.value))
+  }
 
-  handleBlur() {
-    this.setState(state => {
-      let value = state.value
-      if (state.value < -1)
-        value = -1
-      else if (state.value > 100)
-        value = 100
-      return {value: value}
-    }, this.state.onBlur(this.state))
-  }
-  getValue(){
-    return this.state.value
-  }
   render() {
+    const value = this.props.value
     const {classes} = this.props
     return (
       <div className={classes.root}>
-        <Typography variant="h6">
-          Multiplier
-        </Typography>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs>
             <Slider
-              value={this.state.value}
-              onChange={this.handleSliderChange.bind(this)}
+              value={value}
+              onChange={this.handleSliderChange}
               aria-labelledby="input-slider"
               valueLabelDisplay="auto"
               min={-1}
               max={100}
-              onBlur={this.handleBlur.bind(this)}
+              // onBlur={this.handleBlur.bind(this)}
             />
           </Grid>
           <Grid item>
             <Input
               className={classes.input}
-              value={this.state.value}
+              value={value}
               margin="dense"
-              onChange={this.handleInputChange.bind(this)}
-              onBlur={this.handleBlur.bind(this)}
+              onChange={this.handleInputChange}
+              onBlur={this.props.onBlur}
               inputProps={{
                 step: 3,
                 min: -1,
