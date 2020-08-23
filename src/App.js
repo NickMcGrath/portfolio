@@ -10,8 +10,8 @@ let tableData = [
       description: "Hello I do this",
       min: 10,
       max: 100,
-      x1: 10,
-      x2: 90,
+      setMin: 10,
+      setMax: 90,
       multiplier: -1
     }, {
       display: "sub display two",
@@ -19,8 +19,8 @@ let tableData = [
       description: "Hello I do that 2",
       min: -10,
       max: 100,
-      x1: 10,
-      x2: 90,
+      setMin: 10,
+      setMax: 90,
       multiplier: -1
     }]
   },
@@ -32,8 +32,8 @@ let tableData = [
       description: "Hello I do something 3",
       min: 5,
       max: 10,
-      x1: 5,
-      x2: 10,
+      setMin: 5,
+      setMax: 10,
       multiplier: -1
     }, {
       display: "sub display four",
@@ -41,8 +41,8 @@ let tableData = [
       description: "Hello I do not sure 4",
       min: 1,
       max: 3,
-      x1: 1,
-      x2: 3,
+      setMin: 1,
+      setMax: 3,
       multiplier: -1
     }]
   },

@@ -13,17 +13,37 @@ const styles = theme => ({
   }
 });
 
+/**
+ * SinglePointSlider is a stateless class with a slider and text input.
+ *
+ * @author Nicholas McGrath
+ */
 class SinglePointSlider extends React.Component {
+  /**
+   * Create a SinglePointSlider.
+   * @param props object containing:
+   *  onChange a function that takes the new value
+   *  onBlur a function that takes no parameters
+   */
   constructor(props) {
     super(props);
     this.handleSliderChange = this.handleSliderChange.bind(this)
     this.handleInputChange = this.handleInputChange.bind(this)
   }
 
+  /**
+   * Triggers on slider change.
+   * @param event
+   * @param newValue
+   */
   handleSliderChange(event, newValue) {
     this.props.onChange(newValue)
   }
 
+  /**
+   * Triggers on input change.
+   * @param event
+   */
   handleInputChange(event) {
     this.props.onChange(event.target.value === '' ? '' : Number(event.target.value))
   }

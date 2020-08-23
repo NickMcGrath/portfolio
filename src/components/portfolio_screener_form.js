@@ -65,8 +65,8 @@ class PortfolioScreenerForm extends React.Component {
               Range
             </Typography>
             <TwoPointInputSlider
-              x1={this.state.subSelected.x1}
-              x2={this.state.subSelected.x2}
+              x1={this.state.subSelected.setMin}
+              x2={this.state.subSelected.setMax}
               min={this.state.subSelected.min}
               max={this.state.subSelected.max}
               onChange={this.handleRangeSliderData.bind(this)}
@@ -104,8 +104,8 @@ class PortfolioScreenerForm extends React.Component {
 
   handleRangeSliderData(data) {
     let updatedSubSelected = Object.assign({}, this.state.subSelected)
-    updatedSubSelected.x1 = data[0]
-    updatedSubSelected.x2 = data[1]
+    updatedSubSelected.setMin = data[0]
+    updatedSubSelected.setMax = data[1]
     this.setState({subSelected: updatedSubSelected})
     this.updateSubSelected(updatedSubSelected)
   }
@@ -120,15 +120,15 @@ class PortfolioScreenerForm extends React.Component {
   }
 
   handleRangeSliderBlur() {
-    let x1 = this.state.subSelected.x1, x2 = this.state.subSelected.x2
-    if (x1 > x2)
-      [x1, x2] = [x2, x1]
-    if (x1 < this.state.subSelected.min)
-      x1 = this.state.subSelected.min
-    else if (x2 > this.state.subSelected.max)
-      x2 = this.state.subSelected.max
+    let setMin = this.state.subSelected.setMin, setMax = this.state.subSelected.setMax
+    if (setMin > setMax)
+      [setMin, setMax] = [setMax, setMin]
+    if (setMin < this.state.subSelected.min)
+      setMin = this.state.subSelected.min
+    else if (setMax > this.state.subSelected.max)
+      setMax = this.state.subSelected.max
 
-    this.handleRangeSliderData([x1, x2])
+    this.handleRangeSliderData([setMin, setMax])
   }
 
   updateSubSelected(updatedSubSelected) {
@@ -156,15 +156,29 @@ class PortfolioScreenerForm extends React.Component {
   }
 
   onSubmit() {
+    let values = ['apiKey', 'setMin', 'setMax', 'multiplier']
     let elements = []
     for (let i = 0; i < this.elements.length; i++) {
       for (let j = 0; j < this.elements[i].subEntries.length; j++) {
         if (JSON.stringify(this.elements[i].subEntries[j]) !== JSON.stringify(this.defaultElements[i].subEntries[j])) {
-          elements.push(this.elements[i].subEntries[j])
+          let value = {}
+          for(let valueKey of values)
+            value[valueKey] = this.elements[i].subEntries[j][valueKey]
+          elements.push(value)
         }
       }
     }
     console.log(elements)
+    fetch('http://localhost:5000/ScreenerCriteria', {
+      method: 'POST',
+      // mode: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(elements)
+    }).then(response => response.json())
+      .then(json => console.log(json))
+      .catch(error => console.log(error))
+
+
   }
 }
 

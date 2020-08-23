@@ -1,5 +1,6 @@
 {
   "name": "portfolio",
+  "proxy": "http://localhost:8080",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -11,6 +12,7 @@
     "@testing-library/user-event": "^7.2.1",
     "bootstrap": "^4.5.0",
     "debug": "^4.1.1",
+    "express": "^4.17.1",
     "log": "^6.0.0",
     "nvm": "0.0.4",
     "react": "^16.13.1",

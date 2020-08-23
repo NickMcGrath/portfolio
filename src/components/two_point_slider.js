@@ -13,7 +13,18 @@ const styles = theme => ({
   },
 });
 
+/**
+ * TwoPointInputSlider is a stateless class with a slider and two text inputs on both sides of the slider
+ *
+ * @author Nicholas McGrath
+ */
 class TwoPointInputSlider extends React.Component {
+  /**
+   * Create a TwoPointInputSlider.
+   * @param props object containing:
+   *  onChange a function that takes array of new values
+   *  onBlur a function that takes no parameters
+   */
   constructor(props) {
     super(props);
     this.handleInputChangeX1 = this.handleInputChangeX1.bind(this)
@@ -21,13 +32,27 @@ class TwoPointInputSlider extends React.Component {
     this.handleSliderChange = this.handleSliderChange.bind(this)
   }
 
+  /**
+   * Triggers on slider change and calls onChange prop.
+   * @param event
+   * @param newValue
+   */
   handleSliderChange = (event, newValue) => {
     this.props.onChange([newValue[0], newValue[1]])
   };
-
+  /**
+   * Triggers on left slider change.
+   * @param event
+   * @param newValue
+   */
   handleInputChangeX1 = (event) => {
     this.props.onChange([event.target.value === '' ? '' : Number(event.target.value), this.props.x2])
   };
+  /**
+   * Triggers on right slider change.
+   * @param event
+   * @param newValue
+   */
   handleInputChangeX2 = (event) => {
     this.props.onChange([this.props.x1, event.target.value === '' ? '' : Number(event.target.value)])
   };
