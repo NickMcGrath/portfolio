@@ -8,14 +8,32 @@ import threading
 from datetime import datetime
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
+import logging
+import pickle
+import glob
+import os
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+def singleton(class_):
+    instances = {}
+
+    def get_instance(*args, **kwargs):
+        if class_ not in instances:
+            instances[class_] = class_(*args, **kwargs)
+        return instances[class_]
+
+    return get_instance
 
 
 class Stock:
     def __init__(self, overview):
         self.overview = overview
 
+    @property
     def export(self):
-        return {self.overview['Symbol']: [{'Overview': self.overview}]}
+        return {[{'Overview': self.overview}]}
 
     def __repr__(self):
         return str(
@@ -61,45 +79,46 @@ class StockDownloader:
                 max_workers=threads) as executor:
             stocks = executor.map(self.download_stock, tickers)
             # executor.shutdown(wait=True)
-        return list(stocks)
+        return stocks
 
 
 class StockFileManager:
-    file_name = 'stock_list'  # followed by date
+    file_path = 'stock_pickles/'
+    file_name = 'stock_list_'  # followed by date
+    file_suffix = '.pkl'
+    date_time_format = '%Y_%m_%d-%I_%M_%S_%p'
     lock = threading.Lock()
 
     @classmethod
-    def read(cls) -> [Stock]:
+    def read(cls, date_time: datetime) -> [Stock]:
+        stock_list = []
         with cls.lock:
-            with open():
-                pass
+            with open(cls.file_path + cls.file_name + date_time.strftime(cls.date_time_format) + cls.file_suffix,
+                      'rb') as f:
+                while True:
+                    try:
+                        stock_list.append(pickle.load(f))
+                    except EOFError:
+                        break
+        return stock_list
 
     @classmethod
     def write(cls, data):
         with cls.lock:
-            with open(f'stock_list_{datetime.date(datetime.now())}.json', 'a') as f:
-                json.dump(data, f, ensure_ascii=False, indent=4)
+            with open(cls.file_path + cls.file_name + datetime.now().strftime(cls.date_time_format) + cls.file_suffix,
+                      'ab') as f:
+                pickle.dump(data, f)
 
+    @classmethod
+    def get_most_recent_date(cls) -> datetime:
+        pickle_list = glob.glob(cls.file_path + "*")
+        recent_file = max(pickle_list, key=os.path.getctime)
+        recent_file_date_str = os.path.basename(recent_file).replace(cls.file_name, '').replace(cls.file_suffix, '')
+        return datetime.strptime(recent_file_date_str, cls.date_time_format)
 
-# class Frequency(Enum):
-#     INSTANT = 0,
-#     SECOND = 1,
-#     MINUTE = 60,
-#     HOUR = 60*60,
-#     HALF_DAY = 60*60*12,
-#     DAY = 60*60*24
-#     WEEK = 60*60*24*7
-#     THIRTY_DAY = 60*60*24*31
-
-def singleton(class_):
-    instances = {}
-
-    def get_instance(*args, **kwargs):
-        if class_ not in instances:
-            instances[class_] = class_(*args, **kwargs)
-        return instances[class_]
-
-    return get_instance
+    @classmethod
+    def read_most_recent(cls) -> [Stock]:
+        return cls.read(cls.get_most_recent_date())
 
 
 @singleton
@@ -136,8 +155,15 @@ class StockSorter:
         print(self.attribute_dict)
 
 
-test_stock_list = StockDownloader().download_stocks(['f', 'msft'])
-test_export_list = [stock.export() for stock in test_stock_list]
+# for testing
+def main():
+    test_stock_list = StockDownloader().download_stocks(['f', 'msft'])
+    for stock in test_stock_list:
+        logging.debug(stock)
+        StockFileManager.write(stock)
 
-fm = StockFileManager()
-fm.write(test_export_list)
+    logging.debug('most recent: ' + str(StockFileManager.read_most_recent()))
+
+
+if __name__ == '__main__':
+    main()
