@@ -5,7 +5,7 @@ import json
 import requests
 import concurrent.futures
 import threading
-from datetime import datetime
+from datetime import date
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
@@ -54,30 +54,32 @@ class StockDownloader:
         except:
             return False
 
-    def download_stock(self, ticker):
+    @classmethod
+    def download_stock(cls, ticker):
         stock = requests.get(
             f'https://www.alphavantage.co/query?function=OVERVIEW&symbol={ticker}&apikey={StockDownloader.api_key}')
         stock = stock.json()
         for k, v in stock.items():
-            if self._is_type(v, int):
+            if cls._is_type(v, int):
                 stock[k] = int(v)
-            elif self._is_type(v, float):
+            elif cls._is_type(v, float):
                 stock[k] = float(v)
             elif v == 'true':
                 stock[k] = True
             elif v == 'false':
                 stock[k] = False
-        time.sleep(self.wait_sec)
+        time.sleep(cls.wait_sec)
         return Stock(overview=stock)
 
     """
     :return generator
     """
 
-    def download_stocks(self, tickers, threads=threads):
+    @classmethod
+    def download_stocks(cls, tickers, threads=threads):
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=threads) as executor:
-            stocks = executor.map(self.download_stock, tickers)
+            stocks = executor.map(cls.download_stock, tickers)
             # executor.shutdown(wait=True)
         return stocks
 
@@ -86,14 +88,13 @@ class StockFileManager:
     file_path = 'stock_pickles/'
     file_name = 'stock_list_'  # followed by date
     file_suffix = '.pkl'
-    date_time_format = '%Y_%m_%d-%I_%M_%S_%p'
     lock = threading.Lock()
 
     @classmethod
-    def read(cls, date_time: datetime) -> [Stock]:
+    def read(cls, the_date: date) -> [Stock]:
         stock_list = []
         with cls.lock:
-            with open(cls.file_path + cls.file_name + date_time.strftime(cls.date_time_format) + cls.file_suffix,
+            with open(cls.file_path + cls.file_name + the_date.isoformat() + cls.file_suffix,
                       'rb') as f:
                 while True:
                     try:
@@ -103,36 +104,54 @@ class StockFileManager:
         return stock_list
 
     @classmethod
-    def write(cls, data):
+    def write(cls, stock):
         with cls.lock:
-            with open(cls.file_path + cls.file_name + datetime.now().strftime(cls.date_time_format) + cls.file_suffix,
+            with open(cls.file_path + cls.file_name + date.today().isoformat() + cls.file_suffix,
                       'ab') as f:
-                pickle.dump(data, f)
+                pickle.dump(stock, f)
 
     @classmethod
-    def get_most_recent_date(cls) -> datetime:
+    def get_most_recent_date(cls) -> date:
         pickle_list = glob.glob(cls.file_path + "*")
         recent_file = max(pickle_list, key=os.path.getctime)
         recent_file_date_str = os.path.basename(recent_file).replace(cls.file_name, '').replace(cls.file_suffix, '')
-        return datetime.strptime(recent_file_date_str, cls.date_time_format)
+        return date.fromisoformat(recent_file_date_str)
 
     @classmethod
     def read_most_recent(cls) -> [Stock]:
         return cls.read(cls.get_most_recent_date())
 
+    @classmethod
+    def is_empty_folder(cls):
+        if len(os.listdir(cls.file_path)) == 0:
+            return True
+        else:
+            return False
+
 
 @singleton
 class StockDownloadManager:
 
-    def __init__(self, stock_list_update_callback):
+    def __init__(self, stock_list):
         scheduler = BackgroundScheduler()
         scheduler.add_job(self.update_current_list, 'cron', day_of_week='mon-fri', hour=20, minute=4)
         scheduler.start()
-        self.stock_list = []
-        self.stock_list_update_callbacks = [stock_list_update_callback]
+        self.stock_list = stock_list
+        self.stock_list_update_callbacks = []
+
+    def add_list_update_callback(self, stock_list_update_callback):
+        self.stock_list_update_callbacks.append(stock_list_update_callback)
 
     def update_current_list(self):
-        pass
+        if StockFileManager.is_empty_folder() or StockFileManager.get_most_recent_date() < date.today():
+            for stock in StockDownloader.download_stocks(self.stock_list):
+                self.stock_list.append(stock)
+                StockFileManager.write(stock)
+
+            for callback in self.stock_list_update_callbacks:
+                callback()
+        else:
+            self.stock_list = StockFileManager.read(date.today())
 
 
 class StockSorter:
@@ -157,12 +176,17 @@ class StockSorter:
 
 # for testing
 def main():
-    test_stock_list = StockDownloader().download_stocks(['f', 'msft'])
-    for stock in test_stock_list:
-        logging.debug(stock)
-        StockFileManager.write(stock)
-
-    logging.debug('most recent: ' + str(StockFileManager.read_most_recent()))
+    # test_stock_list = StockDownloader().download_stocks(['f', 'msft'])
+    # for stock in test_stock_list:
+    #     logging.debug(stock)
+    #     StockFileManager.write(stock)
+    #
+    # logging.debug('most recent: ' + str(StockFileManager.read_most_recent()))
+    ticker_list = ['msft', 'f', 'aapl']
+    dm = StockDownloadManager(ticker_list)
+    logging.debug(dm.stock_list)
+    dm.update_current_list()
+    logging.debug(dm.stock_list)
 
 
 if __name__ == '__main__':
