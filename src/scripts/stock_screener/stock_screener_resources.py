@@ -12,6 +12,7 @@ import logging
 import pickle
 import glob
 import os
+import pandas as pd
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -85,16 +86,18 @@ class StockDownloader:
 
 
 class StockFileManager:
-    file_path = 'stock_pickles/'
-    file_name = 'stock_list_'  # followed by date
-    file_suffix = '.pkl'
+    pickle_file_path = 'stock_pickles/'
+    pickle_file_name = 'stock_list_'  # followed by date
+    pickle_file_suffix = '.pkl'
+    ticker_list_file = 'ticker_table.csv'
+    ticker_list_header = 'Symbol'
     lock = threading.Lock()
 
     @classmethod
     def read(cls, the_date: date) -> [Stock]:
         stock_list = []
         with cls.lock:
-            with open(cls.file_path + cls.file_name + the_date.isoformat() + cls.file_suffix,
+            with open(cls.pickle_file_path + cls.pickle_file_name + the_date.isoformat() + cls.pickle_file_suffix,
                       'rb') as f:
                 while True:
                     try:
@@ -106,15 +109,16 @@ class StockFileManager:
     @classmethod
     def write(cls, stock):
         with cls.lock:
-            with open(cls.file_path + cls.file_name + date.today().isoformat() + cls.file_suffix,
+            with open(cls.pickle_file_path + cls.pickle_file_name + date.today().isoformat() + cls.pickle_file_suffix,
                       'ab') as f:
                 pickle.dump(stock, f)
 
     @classmethod
     def get_most_recent_date(cls) -> date:
-        pickle_list = glob.glob(cls.file_path + "*")
+        pickle_list = glob.glob(cls.pickle_file_path + "*")
         recent_file = max(pickle_list, key=os.path.getctime)
-        recent_file_date_str = os.path.basename(recent_file).replace(cls.file_name, '').replace(cls.file_suffix, '')
+        recent_file_date_str = os.path.basename(recent_file).replace(cls.pickle_file_name, '').replace(
+            cls.pickle_file_suffix, '')
         return date.fromisoformat(recent_file_date_str)
 
     @classmethod
@@ -123,55 +127,73 @@ class StockFileManager:
 
     @classmethod
     def is_empty_folder(cls):
-        if len(os.listdir(cls.file_path)) == 0:
+        if len(os.listdir(cls.pickle_file_path)) == 0:
             return True
         else:
             return False
 
+    @classmethod
+    def get_ticker_list(cls):
+        data = pd.read_csv(cls.ticker_list_file)
+        return data[cls.ticker_list_header].tolist()
 
-@singleton
+
 class StockDownloadManager:
 
-    def __init__(self, stock_list):
+    def __init__(self):
         scheduler = BackgroundScheduler()
         scheduler.add_job(self.update_current_list, 'cron', day_of_week='mon-fri', hour=20, minute=4)
         scheduler.start()
-        self.stock_list = stock_list
+        self.stock_list = []
+        self.update_current_list()
         self.stock_list_update_callbacks = []
 
     def add_list_update_callback(self, stock_list_update_callback):
         self.stock_list_update_callbacks.append(stock_list_update_callback)
 
-    def update_current_list(self):
+    def update_current_list(self) -> [Stock]:
         if StockFileManager.is_empty_folder() or StockFileManager.get_most_recent_date() < date.today():
-            for stock in StockDownloader.download_stocks(self.stock_list):
-                self.stock_list.append(stock)
+            updated_list = []
+            for stock in StockDownloader.download_stocks(StockFileManager.get_ticker_list()):
+                updated_list.append(stock)
                 StockFileManager.write(stock)
-
+            self.stock_list = updated_list
             for callback in self.stock_list_update_callbacks:
                 callback()
         else:
             self.stock_list = StockFileManager.read(date.today())
+        return self.stock_list
 
 
 class StockSorter:
+    values_to_sort = ['PERatio', 'PEGRatio', 'PriceToBookRatio']
+
     def __init__(self):
-        self.factory = StockDownloader()
+        self.stock_download_manager = StockDownloadManager()
         self.attribute_dict = {}
+        self.update(self.stock_download_manager.update_current_list())
+        logging.debug('End of Stock Sorter init, final attribute dictionary:\n' + str(self.attribute_dict))
 
-    def download_and_sort(self, tickers):
-        values_to_sort = ['PERatio', 'PEGRatio', 'PriceToBookRatio']
+    def update(self, unsorted_stocks: list):
+        for key in self.values_to_sort:
+            def sort_key(stock): return stock.overview[key]
 
-        generator_stock_list = self.factory.download_stocks(tickers, threads=5)
-        stock_list = []
+            self.attribute_dict[key] = sorted(unsorted_stocks, key=sort_key)
 
-        for stock in generator_stock_list:
-            stock_list.append(stock)
-
-        for key in values_to_sort:
-            print(key)
-            self.attribute_dict[key] = sorted(stock_list, key=lambda stock: stock.overview[key])
-        print(self.attribute_dict)
+    # def download_and_sort(self, tickers: list):
+    #     """Depreciated"""
+    #     values_to_sort = ['PERatio', 'PEGRatio', 'PriceToBookRatio']
+    #
+    #     generator_stock_list = self.factory.download_stocks(tickers, threads=5)
+    #     stock_list = []
+    #
+    #     for stock in generator_stock_list:
+    #         stock_list.append(stock)
+    #
+    #     for key in values_to_sort:
+    #         print(key)
+    #         self.attribute_dict[key] = sorted(stock_list, key=lambda stock: stock.overview[key])
+    #     print(self.attribute_dict)
 
 
 # for testing
@@ -182,11 +204,16 @@ def main():
     #     StockFileManager.write(stock)
     #
     # logging.debug('most recent: ' + str(StockFileManager.read_most_recent()))
-    ticker_list = ['msft', 'f', 'aapl']
-    dm = StockDownloadManager(ticker_list)
-    logging.debug(dm.stock_list)
-    dm.update_current_list()
-    logging.debug(dm.stock_list)
+
+    # test 2
+    # ticker_list = ['msft', 'f', 'aapl']
+    # dm = StockDownloadManager(ticker_list)
+    # logging.debug(dm.stock_list)
+    # dm.update_current_list()
+    # logging.debug(dm.stock_list)
+
+    # test 3
+    StockSorter()
 
 
 if __name__ == '__main__':
